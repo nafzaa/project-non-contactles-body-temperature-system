@@ -16,6 +16,7 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 int var = 0;
 
 int state = 0;
+int state2 = 0;
 
 // pin driver motor
 int in1 = 2;
@@ -53,16 +54,21 @@ void setup()
   pinMode(irsensor, INPUT);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
-  lcd.setCursor(2, 0);
-  lcd.print("TEMPERATURE");
-  lcd.setCursor(0, 1);
-  lcd.print("= ");
   Serial.println("CLEARDATA");
   Serial.println("LABEL,Timer,Name,Temperature");
 
 }
 void loop() 
 {
+  if (state2 == 0){
+    lcd.clear();
+    lcd.setCursor(3, 0);
+    lcd.print("WELCOME");
+    lcd.setCursor(0, 1);
+    lcd.print("SCAN CARD....");
+    state2 = 1;
+    }
+  
 
   switch (var) {
   case 0:
@@ -86,12 +92,21 @@ void loop()
   content.toUpperCase();
   if (content.substring(1) == "3A ED E6 BE")
   {
+    
+    lcd.setCursor(0, 1);
+    lcd.print("                ");
+    lcd.setCursor(0, 1);
+    lcd.print("CARD ACCESS...");
     changedata = 1;
     var = 1;
   }
 
   if (content.substring(1) == "9C 61 37 31")
   {
+    lcd.setCursor(0, 1);
+    lcd.print("                ");
+    lcd.setCursor(0, 1);
+    lcd.print("CARD ACCESS...");
     changedata = 2;
     var = 1;
   }
@@ -99,10 +114,16 @@ void loop()
  
     break;
   case 1:
+    
     // running motor
     if (state == 0){
        digitalWrite(in1, HIGH);
        digitalWrite(in2, LOW);
+       lcd.clear();
+       lcd.setCursor(3, 0);
+       lcd.print("TEMPERATURE");
+       lcd.setCursor(0, 1);
+       lcd.print("= WAIT..");
        state = 1;
       }
   
@@ -136,11 +157,11 @@ void loop()
 
       dataTemp = (data[0] + data[1] + data[2] + data[3] + data[4])/ 5;
       }
-     
+      
+     lcd.setCursor(2, 1);
+     lcd.print("          ");
      lcd.setCursor(2, 1);
      lcd.print(dataTemp);
-     lcd.setCursor(2, 1);
-     lcd.print("      ");
      var = 3;
      state = 0;
     break;
@@ -179,6 +200,7 @@ void loop()
        digitalWrite(in2, LOW);
        var = 0;
        dataTemp = 0;
+       state2 = 0;
       }
     break;
 }
