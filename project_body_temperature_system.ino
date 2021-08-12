@@ -34,6 +34,11 @@ int distance;
 
 float data[5];
 float dataTemp;
+
+int changedata = 0;
+
+String nama1 = "ABU";
+String nama2 = "ALI";
  
 void setup() 
 {
@@ -52,6 +57,8 @@ void setup()
   lcd.print("TEMPERATURE");
   lcd.setCursor(0, 1);
   lcd.print("= ");
+  Serial.println("CLEARDATA");
+  Serial.println("LABEL,Timer,Name,Temperature");
 
 }
 void loop() 
@@ -69,28 +76,27 @@ void loop()
     return;
   }
   //Show UID on serial monitor
-  Serial.print("UID tag :");
   String content= "";
   byte letter;
   for (byte i = 0; i < mfrc522.uid.size; i++) 
   {
-     Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
-     Serial.print(mfrc522.uid.uidByte[i], HEX);
      content.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " "));
      content.concat(String(mfrc522.uid.uidByte[i], HEX));
   }
-  Serial.println();
-  Serial.print("Message : ");
   content.toUpperCase();
-  if (content.substring(1) == "BD 31 15 2B") //change here the UID of the card/cards that you want to give access
+  if (content.substring(1) == "3A ED E6 BE")
   {
+    changedata = 1;
+    var = 1;
+  }
+
+  if (content.substring(1) == "9C 61 37 31")
+  {
+    changedata = 2;
     var = 1;
   }
  
- else   {
-    Serial.println(" Access denied");
-    delay(3000);
-  }
+ 
     break;
   case 1:
     // running motor
@@ -139,6 +145,28 @@ void loop()
      state = 0;
     break;
   case 3:
+
+    if (changedata == 1){
+      changedata = 0;
+      Serial.print("DATA,TIME,");
+      Serial.print(nama1);
+      Serial.print(",");
+      Serial.println(dataTemp);
+      var = 4;
+      } 
+
+    if (changedata == 2){
+      changedata = 0;
+      Serial.print("DATA,TIME,");
+      Serial.print(nama2);
+      Serial.print(",");
+      Serial.println(dataTemp);
+      var = 4;
+      } 
+     
+    break;
+
+  case 4:
      if (state == 0){
        digitalWrite(in1, LOW);
        digitalWrite(in2, HIGH);
@@ -149,7 +177,8 @@ void loop()
     if (irsensorvalue == LOW){
        digitalWrite(in1, LOW);
        digitalWrite(in2, LOW);
-       var = 4;
+       var = 0;
+       dataTemp = 0;
       }
     break;
 }
