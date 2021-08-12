@@ -11,7 +11,10 @@ Adafruit_MLX90614 mlx = Adafruit_MLX90614();
  
 #define SS_PIN 10
 #define RST_PIN 9
+
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
+
+String read_rfid;
 
 int var = 0;
 
@@ -72,25 +75,13 @@ void loop()
 
   switch (var) {
   case 0:
-    if ( ! mfrc522.PICC_IsNewCardPresent()) 
-  {
+    if ( ! mfrc522.PICC_IsNewCardPresent())
     return;
-  }
-  // Select one of the cards
-  if ( ! mfrc522.PICC_ReadCardSerial()) 
-  {
+    if ( ! mfrc522.PICC_ReadCardSerial())
     return;
-  }
-  //Show UID on serial monitor
-  String content= "";
-  byte letter;
-  for (byte i = 0; i < mfrc522.uid.size; i++) 
-  {
-     content.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " "));
-     content.concat(String(mfrc522.uid.uidByte[i], HEX));
-  }
-  content.toUpperCase();
-  if (content.substring(1) == "3A ED E6 BE")
+    dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
+
+  if (read_rfid == "3aede6be")
   {
     
     lcd.setCursor(0, 1);
@@ -101,7 +92,7 @@ void loop()
     var = 1;
   }
 
-  if (content.substring(1) == "9C 61 37 31")
+  if (read_rfid == "9c613731")
   {
     lcd.setCursor(0, 1);
     lcd.print("                ");
@@ -156,14 +147,22 @@ void loop()
         }
 
       dataTemp = (data[0] + data[1] + data[2] + data[3] + data[4])/ 5;
+
+      lcd.setCursor(2, 1);
+      lcd.print("             ");
+      lcd.setCursor(2, 1);
+      lcd.print(dataTemp);
+      var = 3;
+      state = 0;
       }
-      
-     lcd.setCursor(2, 1);
-     lcd.print("          ");
-     lcd.setCursor(2, 1);
-     lcd.print(dataTemp);
-     var = 3;
-     state = 0;
+
+    else {
+      lcd.setCursor(2, 1);
+      lcd.print("            ");
+      lcd.setCursor(2, 1);
+      lcd.print("SCAN TEMP...");
+      }
+     
     break;
   case 3:
 
@@ -207,3 +206,11 @@ void loop()
   // Look for new cards
   
 } 
+
+
+void dump_byte_array(byte *buffer, byte bufferSize) {
+    read_rfid="";
+    for (byte i = 0; i < bufferSize; i++) {
+        read_rfid=read_rfid + String(buffer[i], HEX);
+    }
+}
